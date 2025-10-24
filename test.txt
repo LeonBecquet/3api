@@ -1,0 +1,46 @@
+# Register admin
+$reg = Invoke-RestMethod -Uri "http://localhost:3000/users" -Method POST `
+  -Body '{"email":"leon@test.com","username":"test","password":"test123", "role":"admin"}' `
+  -ContentType "application/json"
+$reg
+
+# Login pour avoir ID/ role
+$login = Invoke-RestMethod -Uri "http://localhost:3000/auth/login" -Method POST `
+  -Body '{"email":"leon@test.com","password":"test123"}' `
+  -ContentType "application/json"
+$login
+
+# ID du user connecté
+$ME_ID = $login.user._id
+"ME_ID = $ME_ID"
+
+# Lire le profil 
+$me = Invoke-RestMethod -Uri "http://localhost:3000/users/$ME_ID" -Headers @{ "X-User-Id" = $ME_ID }
+$me
+
+# Créer un restaurant 
+$headers = @{ "X-User-Id" = $ME_ID }
+Invoke-RestMethod -Uri "http://localhost:3000/restaurants" -Method POST `
+  -Headers $headers `
+  -Body '{"name":"Pizza Roma","address":"123 Rue Test"}' `
+  -ContentType "application/json"
+
+#modifier un user
+Invoke-RestMethod -Uri "http://localhost:3000/users/$ME_ID" -Method PUT `
+  -Headers @{ "X-User-Id" = $ME_ID } `
+  -Body '{"username":"leon_modif"}' `
+  -ContentType "application/json"
+
+#lister les les restaurants 
+Invoke-RestMethod -Uri "http://localhost:3000/restaurants"
+
+#créer un menu dans un restaurant 
+$menu = Invoke-RestMethod -Uri "http://localhost:3000/menus" -Method POST `
+  -Headers @{ "X-User-Id" = $ME_ID } `
+  -Body '{"restaurant_id":"test","name":"Margherita","description":"Pizza classique","price":9.5}' `
+  -ContentType "application/json"
+$menu
+
+#delete user 
+Invoke-RestMethod -Uri "http://localhost:3000/users/$ME_ID" -Method DELETE `
+  -Headers @{ "X-User-Id" = $ME_ID }
